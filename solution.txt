@@ -1,0 +1,116 @@
+1.db.topics.aggregate(
+  [
+    {
+      $lookup: {
+        from: 'tasks',
+        localField: 'topic',
+        foreignField: 'task',
+        as: 'Topic Task Data'
+      }
+    },
+    {
+      $match: { topicDate: { $regex: '2020-10' } }
+    },
+    {
+      $project: {
+        _id: 0,
+        topic: 1,
+        topicDate: 1,
+        'Topic Task Data.userId': 1,
+        'Topic Task Data.submitted': 1,
+        'Topic Task Data.task': 1
+      }
+    }
+  ],
+  { maxTimeMS: 60000, allowDiskUse: true }
+);
+
+
+2. db.company_drives.find({driveDate: {$gte: ISODate("2020-10-10"), $lte: ISODate("2020-10-15")}})
+
+
+
+3.db.company_drives.aggregate([
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'userId',
+        foreignField: 'userId',
+        as: 'studentInfo'
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        'studentInfo.userName': 1,
+        company: 1,
+        driveDate: 1,
+        'studentInfo.userEmail': 1,
+        'studentInfo.userId': 1
+      }
+    }
+  ],
+  { maxTimeMS: 60000, allowDiskUse: true }
+);
+
+4. db.codekata.aggregate(
+  [
+    {
+      $group: {
+        _id: 'Total Problem Solved',
+        count: { $sum: '$problemSolved' }
+      }
+    }
+  ],
+  { maxTimeMS: 60000, allowDiskUse: true }
+);
+
+5.db.mentors.aggregate(
+  [{ $match: { menteeCount: { $gt: 15 } } }],
+  { maxTimeMS: 60000, allowDiskUse: true }
+);
+
+6.db.users.aggregate(
+  [
+    {
+      $lookup: {
+        from: 'attendance',
+        localField: 'userId',
+        foreignField: 'userId',
+        as: 'Absentees'
+      }
+    },
+    {
+      $lookup: {
+        from: 'tasks',
+        localField: 'userId',
+        foreignField: 'userId',
+        as: 'Task-notSubmitted'
+      }
+    },
+    { $unwind: '$Task-notSubmitted' },
+    { $unwind: '$Absent' },
+    {
+      $match: {
+        attended: false,
+        'Absent.topicDate': {
+          $gte: ISODate('2020-10-15'),
+          $lte: ISODate('2020-10-31')
+        }
+      }
+    },
+    {
+      $match: {
+        'Task-notSubmitted.dueDate': {
+          $gte: ISODate('2020-10-15'),
+          $lte: ISODate('2020-10-31')
+        },
+        'Task-notSubmitted.submitted': false
+      }
+    },
+    { $project: { _id: 0, 'Absent._id': 0 } },
+    { $project: { 'task-notSubmitted._id': 0 } }
+  ],
+  { maxTimeMS: 60000, allowDiskUse: true }
+);
+
