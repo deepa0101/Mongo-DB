@@ -1,1 +1,1 @@
-SOlution.txt file has solution for all questions. Screenshots attached in the repo. 
+solution.txt file has solution for all questions. Screenshots attached in the repo. 
